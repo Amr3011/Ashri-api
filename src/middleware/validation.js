@@ -17,11 +17,13 @@ exports.validateProduct = (req, res, next) => {
   const validCategories = [
     "T-Shirt",
     "Sweatshirt",
+    "Crewneck",
     "Hoodie",
     "Pants",
     "Jeans",
     "Shorts",
     "Jacket",
+    "Suit",
     "Other",
   ];
   if (!category || !validCategories.includes(category)) {
