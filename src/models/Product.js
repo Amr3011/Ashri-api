@@ -62,6 +62,7 @@ const productSchema = new mongoose.Schema(
         values: [
           "T-Shirt",
           "Sweatshirt",
+          "Crewneck",
           "Hoodie",
           "Pants",
           "Jeans",
