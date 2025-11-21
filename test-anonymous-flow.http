@@ -1,0 +1,255 @@
+### Health Check
+GET http://localhost:5000/api/health
+
+###
+
+### Root Endpoint
+GET http://localhost:5000/
+
+###
+
+### ========================================
+### CART FLOW - Anonymous Checkout
+### ========================================
+
+### 1. Create New Cart (Get Session ID)
+POST http://localhost:5000/api/cart
+
+###
+
+### 2. Get Cart by Session ID
+GET http://localhost:5000/api/cart/{{sessionId}}
+
+###
+
+### 3. Add Item to Cart
+POST http://localhost:5000/api/cart/{{sessionId}}/items
+Content-Type: application/json
+
+{
+  "productId": "{{productId}}",
+  "size": "L",
+  "color": "أسود",
+  "quantity": 2
+}
+
+###
+
+### 4. Update Cart Item Quantity
+PUT http://localhost:5000/api/cart/{{sessionId}}/items/{{itemId}}
+Content-Type: application/json
+
+{
+  "quantity": 3
+}
+
+###
+
+### 5. Remove Item from Cart
+DELETE http://localhost:5000/api/cart/{{sessionId}}/items/{{itemId}}
+
+###
+
+### 6. Clear Cart
+DELETE http://localhost:5000/api/cart/{{sessionId}}
+
+###
+
+### ========================================
+### ORDERS - Anonymous Checkout
+### ========================================
+
+### 1. Create Order (Checkout with Customer Info)
+POST http://localhost:5000/api/orders
+Content-Type: application/json
+
+{
+  "sessionId": "{{sessionId}}",
+  "firstName": "أحمد",
+  "lastName": "محمد",
+  "email": "ahmed@example.com",
+  "phone": "01234567890",
+  "streetAddress": "15 شارع الجامعة، الدقي",
+  "city": "الجيزة",
+  "state": "الجيزة",
+  "notes": "من فضلك اتصل قبل التوصيل",
+  "shippingFee": 50
+}
+
+###
+
+### 2. Get All Orders (Admin)
+GET http://localhost:5000/api/orders
+
+###
+
+### 3. Get Orders by Status
+GET http://localhost:5000/api/orders?status=pending
+
+###
+
+### 4. Search Orders by Email
+GET http://localhost:5000/api/orders/search?email=ahmed@example.com
+
+###
+
+### 5. Search Orders by Phone
+GET http://localhost:5000/api/orders/search?phone=01234567890
+
+###
+
+### 6. Get Order by ID
+GET http://localhost:5000/api/orders/{{orderId}}
+
+###
+
+### 7. Update Order Status (Admin)
+PATCH http://localhost:5000/api/orders/{{orderId}}/status
+Content-Type: application/json
+
+{
+  "status": "confirmed"
+}
+
+###
+
+### 8. Cancel Order
+PATCH http://localhost:5000/api/orders/{{orderId}}/cancel
+
+###
+
+### ========================================
+### PRODUCTS
+### ========================================
+
+### 1. Get All Products
+GET http://localhost:5000/api/products
+
+###
+
+### 2. Get Product by ID
+GET http://localhost:5000/api/products/{{productId}}
+
+###
+
+### 3. Create Product (with images)
+POST http://localhost:5000/api/products
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="name"
+
+Sweatshirt أسود
+--boundary
+Content-Disposition: form-data; name="description"
+
+سويت شيرت قطن 100%، مريح وعملي
+--boundary
+Content-Disposition: form-data; name="price"
+
+500
+--boundary
+Content-Disposition: form-data; name="category"
+
+sweatshirt
+--boundary
+Content-Disposition: form-data; name="colors"
+
+["أسود", "أبيض", "رمادي"]
+--boundary
+Content-Disposition: form-data; name="sizes[M]"
+
+10
+--boundary
+Content-Disposition: form-data; name="sizes[L]"
+
+15
+--boundary
+Content-Disposition: form-data; name="sizes[XL]"
+
+8
+--boundary
+Content-Disposition: form-data; name="sizes[XXL]"
+
+5
+--boundary--
+
+###
+
+### 4. Update Product
+PUT http://localhost:5000/api/products/{{productId}}
+Content-Type: application/json
+
+{
+  "name": "Sweatshirt أسود - Updated",
+  "price": 550,
+  "sizes": {
+    "L": 20,
+    "XL": 12
+  }
+}
+
+###
+
+### 5. Update Single Size Stock
+PATCH http://localhost:5000/api/products/{{productId}}/stock
+Content-Type: application/json
+
+{
+  "sizeName": "L",
+  "quantity": 25
+}
+
+###
+
+### 6. Delete Product
+DELETE http://localhost:5000/api/products/{{productId}}
+
+###
+
+### ========================================
+### COMPLETE PURCHASE FLOW TEST
+### ========================================
+
+### Step 1: Create Cart
+# @name createCart
+POST http://localhost:5000/api/cart
+
+###
+
+### Step 2: Add First Item
+# @name addItem1
+POST http://localhost:5000/api/cart/{{createCart.response.body.data.sessionId}}/items
+Content-Type: application/json
+
+{
+  "productId": "{{productId}}",
+  "size": "L",
+  "color": "أسود",
+  "quantity": 2
+}
+
+###
+
+### Step 3: View Cart
+GET http://localhost:5000/api/cart/{{createCart.response.body.data.sessionId}}
+
+###
+
+### Step 4: Checkout
+POST http://localhost:5000/api/orders
+Content-Type: application/json
+
+{
+  "sessionId": "{{createCart.response.body.data.sessionId}}",
+  "firstName": "محمد",
+  "lastName": "علي",
+  "email": "mohamed@example.com",
+  "phone": "01098765432",
+  "streetAddress": "20 شارع النصر",
+  "city": "القاهرة",
+  "state": "القاهرة",
+  "shippingFee": 50
+}
+
+###

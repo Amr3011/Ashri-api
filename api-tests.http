@@ -1,0 +1,119 @@
+### Ashly Store API Testing
+### Base URL
+@baseUrl = http://localhost:5000
+@apiUrl = {{baseUrl}}/api
+
+###############################################
+### Health Check
+###############################################
+
+### Check API Health
+GET {{apiUrl}}/health
+
+###############################################
+### Products - Public Routes
+###############################################
+
+### Get all products
+GET {{apiUrl}}/products
+
+### Get products with pagination
+GET {{apiUrl}}/products?page=1&limit=5
+
+### Get products by category
+GET {{apiUrl}}/products?category=T-Shirt
+
+### Search products
+GET {{apiUrl}}/products?search=cotton
+
+### Get single product (replace with actual ID)
+GET {{apiUrl}}/products/673b5c8e9d8f1234567890ab
+
+###############################################
+### Products - Admin Routes
+###############################################
+
+### Create new product (use Postman for file upload)
+# POST {{apiUrl}}/products
+# Content-Type: multipart/form-data
+# 
+# Body (form-data):
+# name: Classic White T-Shirt
+# description: Comfortable 100% cotton t-shirt, perfect for daily wear
+# category: T-Shirt
+# price: 299
+# colors: ["White", "Black", "Navy Blue"]
+# sizes: [{"name": "S", "quantity": 10}, {"name": "M", "quantity": 15}, {"name": "L", "quantity": 12}]
+# images: [upload files]
+
+### Update product (replace ID)
+# PUT {{apiUrl}}/products/673b5c8e9d8f1234567890ab
+# Content-Type: multipart/form-data
+# 
+# Body (form-data):
+# name: Updated Product Name
+# price: 350
+
+### Update product stock
+PATCH {{apiUrl}}/products/673b5c8e9d8f1234567890ab/stock
+Content-Type: application/json
+
+{
+  "sizes": [
+    { "name": "S", "quantity": 5 },
+    { "name": "M", "quantity": 10 },
+    { "name": "L", "quantity": 8 }
+  ]
+}
+
+### Delete product (replace ID)
+DELETE {{apiUrl}}/products/673b5c8e9d8f1234567890ab
+
+###############################################
+### Testing Data Examples
+###############################################
+
+### Example Product 1: T-Shirt
+# {
+#   "name": "Classic Cotton T-Shirt",
+#   "description": "Premium quality 100% cotton t-shirt. Soft, breathable, and comfortable for all-day wear.",
+#   "category": "T-Shirt",
+#   "price": 299,
+#   "colors": ["White", "Black", "Gray", "Navy Blue"],
+#   "sizes": [
+#     { "name": "S", "quantity": 15 },
+#     { "name": "M", "quantity": 20 },
+#     { "name": "L", "quantity": 18 },
+#     { "name": "XL", "quantity": 10 }
+#   ]
+# }
+
+### Example Product 2: Sweatshirt
+# {
+#   "name": "Premium Sweatshirt",
+#   "description": "Cozy fleece sweatshirt perfect for cool weather. Features ribbed cuffs and waistband.",
+#   "category": "Sweatshirt",
+#   "price": 599,
+#   "colors": ["Black", "Gray", "Burgundy"],
+#   "sizes": [
+#     { "name": "M", "quantity": 12 },
+#     { "name": "L", "quantity": 15 },
+#     { "name": "XL", "quantity": 10 },
+#     { "name": "XXL", "quantity": 5 }
+#   ]
+# }
+
+### Example Product 3: Jeans
+# {
+#   "name": "Slim Fit Jeans",
+#   "description": "Modern slim fit jeans made from premium stretch denim. Comfortable and stylish.",
+#   "category": "Jeans",
+#   "price": 799,
+#   "colors": ["Blue", "Black", "Dark Wash"],
+#   "sizes": [
+#     { "name": "S", "quantity": 8 },
+#     { "name": "M", "quantity": 12 },
+#     { "name": "L", "quantity": 10 },
+#     { "name": "XL", "quantity": 6 }
+#   ]
+# }

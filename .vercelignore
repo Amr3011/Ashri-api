@@ -1,0 +1,10 @@
+node_modules
+.env
+.env.example
+.git
+.gitignore
+.vscode
+uploads/
+test-*.http
+*.http
+*.md
