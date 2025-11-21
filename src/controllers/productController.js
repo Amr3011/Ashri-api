@@ -217,8 +217,16 @@ exports.getProductById = async (req, res) => {
 // @access  Admin
 exports.updateProduct = async (req, res) => {
   try {
-    const { name, description, category, price, colors, sizes, removeImages } =
-      req.body;
+    const {
+      name,
+      description,
+      category,
+      price,
+      variants,
+      imageUrls,
+      removeImages,
+      isActive,
+    } = req.body;
 
     const product = await Product.findById(req.params.id);
 
@@ -247,33 +255,57 @@ exports.updateProduct = async (req, res) => {
       }
     }
 
-    // Add new images
+    // Add new images from URLs
+    if (imageUrls && imageUrls.length > 0) {
+      const newImageUrls =
+        typeof imageUrls === "string" ? JSON.parse(imageUrls) : imageUrls;
+      product.images = [...product.images, ...newImageUrls];
+    }
+
+    // Add new images from uploaded files
     if (req.files && req.files.length > 0) {
       const newImages = req.files.map((file) => `/uploads/${file.filename}`);
       product.images = [...product.images, ...newImages];
     }
 
-    // Update other fields
-    if (name) product.name = name;
-    if (description) product.description = description;
-    if (category) product.category = category;
-    if (price) product.price = price;
-    if (colors)
-      product.colors = typeof colors === "string" ? JSON.parse(colors) : colors;
+    // Update basic fields only if provided
+    if (name !== undefined) product.name = name;
+    if (description !== undefined) product.description = description;
+    if (category !== undefined) product.category = category;
+    if (price !== undefined) product.price = price;
+    if (isActive !== undefined) product.isActive = isActive;
 
-    // Update sizes - merge with existing sizes
-    if (sizes) {
-      const parsedSizes = typeof sizes === "string" ? JSON.parse(sizes) : sizes;
+    // Update variants (colors and sizes)
+    if (variants) {
+      const parsedVariants =
+        typeof variants === "string" ? JSON.parse(variants) : variants;
 
-      // Update only the sizes that were sent, keep others unchanged
-      parsedSizes.forEach((inputSize) => {
-        const sizeIndex = product.sizes.findIndex(
-          (s) => s.name === inputSize.name.toUpperCase()
-        );
-        if (sizeIndex !== -1) {
-          product.sizes[sizeIndex].quantity = inputSize.quantity;
-        }
+      // Ensure each variant has all sizes (M, L, XL, XXL)
+      const defaultSizes = [
+        { name: "M", quantity: 0 },
+        { name: "L", quantity: 0 },
+        { name: "XL", quantity: 0 },
+        { name: "XXL", quantity: 0 },
+      ];
+
+      const structuredVariants = parsedVariants.map((variant) => {
+        const sizes = defaultSizes.map((defaultSize) => {
+          const providedSize = variant.sizes?.find(
+            (s) => s.name === defaultSize.name
+          );
+          return {
+            name: defaultSize.name,
+            quantity: providedSize?.quantity || 0,
+          };
+        });
+
+        return {
+          color: variant.color,
+          sizes,
+        };
       });
+
+      product.variants = structuredVariants;
     }
 
     await product.save();
