@@ -228,6 +228,8 @@ exports.updateProduct = async (req, res) => {
       isActive,
     } = req.body;
 
+    console.log("Update request body:", req.body);
+
     const product = await Product.findById(req.params.id);
 
     if (!product) {
@@ -276,9 +278,19 @@ exports.updateProduct = async (req, res) => {
     if (isActive !== undefined) product.isActive = isActive;
 
     // Update variants (colors and sizes)
-    if (variants) {
+    if (variants !== undefined) {
       const parsedVariants =
         typeof variants === "string" ? JSON.parse(variants) : variants;
+
+      console.log("Parsed variants:", parsedVariants);
+
+      // Validate that we have at least one variant
+      if (!parsedVariants || parsedVariants.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "At least one color variant is required",
+        });
+      }
 
       // Ensure each variant has all sizes (M, L, XL, XXL)
       const defaultSizes = [
@@ -289,13 +301,18 @@ exports.updateProduct = async (req, res) => {
       ];
 
       const structuredVariants = parsedVariants.map((variant) => {
+        if (!variant.color) {
+          throw new Error("Each variant must have a color");
+        }
+
         const sizes = defaultSizes.map((defaultSize) => {
           const providedSize = variant.sizes?.find(
             (s) => s.name === defaultSize.name
           );
           return {
             name: defaultSize.name,
-            quantity: providedSize?.quantity || 0,
+            quantity:
+              providedSize?.quantity !== undefined ? providedSize.quantity : 0,
           };
         });
 
@@ -306,6 +323,7 @@ exports.updateProduct = async (req, res) => {
       });
 
       product.variants = structuredVariants;
+      console.log("Structured variants:", structuredVariants);
     }
 
     await product.save();
@@ -316,9 +334,11 @@ exports.updateProduct = async (req, res) => {
       data: product,
     });
   } catch (error) {
+    console.error("Update product error:", error);
     res.status(400).json({
       success: false,
       message: error.message,
+      error: process.env.NODE_ENV === "development" ? error.stack : undefined,
     });
   }
 };
