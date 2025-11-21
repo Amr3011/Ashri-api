@@ -13,6 +13,13 @@ if (process.env.NODE_ENV !== "production") {
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Keep-alive settings
+app.use((req, res, next) => {
+  res.setHeader("Connection", "keep-alive");
+  res.setHeader("Keep-Alive", "timeout=65");
+  next();
+});
+
 // Create uploads directory only in development
 const uploadsDir = path.join(__dirname, "../uploads");
 if (process.env.NODE_ENV !== "production") {
@@ -53,13 +60,36 @@ app.get("/", (req, res) => {
   });
 });
 
-// Health check
-app.get("/api/health", (req, res) => {
-  res.json({
-    success: true,
-    message: "API is healthy",
-    database: "Connected",
-  });
+// Health check with database ping
+app.get("/api/health", async (req, res) => {
+  try {
+    const mongoose = require("mongoose");
+    const dbState = mongoose.connection.readyState;
+    const states = {
+      0: "disconnected",
+      1: "connected",
+      2: "connecting",
+      3: "disconnecting",
+    };
+
+    // Ping database to keep connection alive
+    if (dbState === 1) {
+      await mongoose.connection.db.admin().ping();
+    }
+
+    res.json({
+      success: true,
+      message: "API is healthy",
+      database: states[dbState],
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Health check failed",
+      error: error.message,
+    });
+  }
 });
 
 // Product Routes
