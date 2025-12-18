@@ -259,14 +259,22 @@ exports.updateProduct = async (req, res) => {
       }
     }
 
-    // Add new images from URLs
+    // Add new images from URLs (only if provided)
     if (imageUrls && imageUrls.length > 0) {
       const newImageUrls =
         typeof imageUrls === "string" ? JSON.parse(imageUrls) : imageUrls;
-      product.images = [...product.images, ...newImageUrls];
+
+      // Filter out duplicates - only add images that don't already exist
+      const uniqueNewImages = newImageUrls.filter(
+        (url) => !product.images.includes(url)
+      );
+
+      if (uniqueNewImages.length > 0) {
+        product.images = [...product.images, ...uniqueNewImages];
+      }
     }
 
-    // Add new images from uploaded files
+    // Add new images from uploaded files (only if provided)
     if (req.files && req.files.length > 0) {
       const newImages = req.files.map((file) => `/uploads/${file.filename}`);
       product.images = [...product.images, ...newImages];
