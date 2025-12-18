@@ -81,6 +81,13 @@ const productSchema = new mongoose.Schema(
       min: [0, "Price cannot be negative"],
     },
 
+    oldPrice: {
+      type: Number,
+      required: false,
+      min: [0, "Old price cannot be negative"],
+      default: null,
+    },
+
     // كل لون مع الكميات بتاعته لكل مقاس
     variants: {
       type: [colorVariantSchema],
@@ -112,7 +119,16 @@ const productSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
-    toJSON: { virtuals: true },
+    toJSON: {
+      virtuals: true,
+      transform: function (doc, ret) {
+        // Remove oldPrice from response if it's null
+        if (ret.oldPrice === null) {
+          delete ret.oldPrice;
+        }
+        return ret;
+      },
+    },
     toObject: { virtuals: true },
   }
 );

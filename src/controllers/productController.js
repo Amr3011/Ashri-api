@@ -7,7 +7,7 @@ const path = require("path");
 // @access  Admin
 exports.createProduct = async (req, res) => {
   try {
-    const { name, description, category, price, variants } = req.body;
+    const { name, description, category, price, oldPrice, variants } = req.body;
 
     console.log("Received body:", req.body);
     console.log("Variants type:", typeof variants);
@@ -87,6 +87,7 @@ exports.createProduct = async (req, res) => {
       description,
       category,
       price,
+      oldPrice,
       variants: structuredVariants,
       images,
     });
@@ -222,6 +223,7 @@ exports.updateProduct = async (req, res) => {
       description,
       category,
       price,
+      oldPrice,
       variants,
       imageUrls,
       removeImages,
@@ -275,6 +277,7 @@ exports.updateProduct = async (req, res) => {
     if (description !== undefined) product.description = description;
     if (category !== undefined) product.category = category;
     if (price !== undefined) product.price = price;
+    if (oldPrice !== undefined) product.oldPrice = oldPrice;
     if (isActive !== undefined) product.isActive = isActive;
 
     // Update variants (colors and sizes)
