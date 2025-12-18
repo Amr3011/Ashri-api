@@ -277,7 +277,13 @@ exports.updateProduct = async (req, res) => {
     if (description !== undefined) product.description = description;
     if (category !== undefined) product.category = category;
     if (price !== undefined) product.price = price;
-    if (oldPrice !== undefined) product.oldPrice = oldPrice;
+    if (oldPrice !== undefined) {
+      // If oldPrice is null, empty string, or 0, remove it
+      product.oldPrice =
+        oldPrice === null || oldPrice === "" || oldPrice === 0
+          ? null
+          : oldPrice;
+    }
     if (isActive !== undefined) product.isActive = isActive;
 
     // Update variants (colors and sizes)
