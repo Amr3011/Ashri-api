@@ -227,10 +227,15 @@ exports.updateProduct = async (req, res) => {
       variants,
       imageUrls,
       removeImages,
+      replaceImages,
       isActive,
     } = req.body;
 
+    console.log("=== UPDATE PRODUCT CALLED ===");
     console.log("Update request body:", req.body);
+    console.log("removeImages value:", removeImages);
+    console.log("removeImages type:", typeof removeImages);
+    console.log("removeImages exists:", removeImages !== undefined);
 
     const product = await Product.findById(req.params.id);
 
@@ -241,8 +246,16 @@ exports.updateProduct = async (req, res) => {
       });
     }
 
+    console.log("Product found, current images:", product.images);
+
     // Handle image removal
+    console.log("Checking removeImages condition...");
+    console.log("removeImages:", removeImages);
+    console.log("Is truthy?", !!removeImages);
+    console.log("Has length?", removeImages?.length);
+
     if (removeImages && removeImages.length > 0) {
+      console.log("ENTERING removeImages block!");
       const imagesToRemove =
         typeof removeImages === "string"
           ? JSON.parse(removeImages)
@@ -282,8 +295,22 @@ exports.updateProduct = async (req, res) => {
       console.log("=== END DEBUG ===");
     }
 
-    // Add new images from URLs (only if provided)
-    if (imageUrls && imageUrls.length > 0) {
+    // Replace all images (if replaceImages is provided)
+    if (replaceImages !== undefined) {
+      const newImages =
+        typeof replaceImages === "string"
+          ? JSON.parse(replaceImages)
+          : replaceImages;
+
+      console.log("=== REPLACING ALL IMAGES ===");
+      console.log("Old images:", product.images);
+      console.log("New images:", newImages);
+
+      product.images = newImages;
+      console.log("Images replaced successfully");
+    }
+    // Add new images from URLs (only if provided and not replacing)
+    else if (imageUrls && imageUrls.length > 0) {
       const newImageUrls =
         typeof imageUrls === "string" ? JSON.parse(imageUrls) : imageUrls;
 
