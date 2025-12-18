@@ -248,28 +248,38 @@ exports.updateProduct = async (req, res) => {
           ? JSON.parse(removeImages)
           : removeImages;
 
-      console.log("Images to remove:", imagesToRemove);
-      console.log("Current product images:", product.images);
+      console.log("=== IMAGE REMOVAL DEBUG ===");
+      console.log("Images to remove:", JSON.stringify(imagesToRemove));
+      console.log("Current product images:", JSON.stringify(product.images));
+      console.log("Type of removeImages:", typeof removeImages);
+      console.log("removeImages is array:", Array.isArray(imagesToRemove));
 
+      // Delete physical files from uploads folder
       for (const imageUrl of imagesToRemove) {
-        // Delete physical file only if it's from uploads folder
-        if (imageUrl.includes("/uploads/")) {
+        if (imageUrl && imageUrl.includes("/uploads/")) {
           const filename = imageUrl.split("/").pop();
           try {
             await fs.unlink(path.join(__dirname, "../../uploads", filename));
-            console.log("Deleted file:", filename);
+            console.log("✓ Deleted file:", filename);
           } catch (err) {
-            console.error("Error deleting file:", err);
+            console.error("✗ Error deleting file:", err.message);
           }
         }
       }
 
-      // Remove all images in the removeImages array from product.images
-      product.images = product.images.filter(
-        (img) => !imagesToRemove.includes(img)
+      // Remove images - normalize URLs by trimming whitespace
+      const normalizedRemoveList = imagesToRemove.map((url) => url.trim());
+      const normalizedProductImages = product.images.map((url) => url.trim());
+
+      product.images = normalizedProductImages.filter(
+        (img) => !normalizedRemoveList.includes(img)
       );
 
-      console.log("Updated product images:", product.images);
+      console.log(
+        "After filtering - product images:",
+        JSON.stringify(product.images)
+      );
+      console.log("=== END DEBUG ===");
     }
 
     // Add new images from URLs (only if provided)
