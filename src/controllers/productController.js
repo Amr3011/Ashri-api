@@ -248,15 +248,28 @@ exports.updateProduct = async (req, res) => {
           ? JSON.parse(removeImages)
           : removeImages;
 
+      console.log("Images to remove:", imagesToRemove);
+      console.log("Current product images:", product.images);
+
       for (const imageUrl of imagesToRemove) {
-        const filename = imageUrl.split("/").pop();
-        try {
-          await fs.unlink(path.join(__dirname, "../../uploads", filename));
-        } catch (err) {
-          console.error("Error deleting file:", err);
+        // Delete physical file only if it's from uploads folder
+        if (imageUrl.includes("/uploads/")) {
+          const filename = imageUrl.split("/").pop();
+          try {
+            await fs.unlink(path.join(__dirname, "../../uploads", filename));
+            console.log("Deleted file:", filename);
+          } catch (err) {
+            console.error("Error deleting file:", err);
+          }
         }
-        product.images = product.images.filter((img) => img !== imageUrl);
       }
+
+      // Remove all images in the removeImages array from product.images
+      product.images = product.images.filter(
+        (img) => !imagesToRemove.includes(img)
+      );
+
+      console.log("Updated product images:", product.images);
     }
 
     // Add new images from URLs (only if provided)
