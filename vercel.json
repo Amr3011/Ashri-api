@@ -1,31 +1,8 @@
 {
-  "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "api/index.js",
-      "use": "@vercel/node"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/products(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/api/cart(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/api/orders(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/api/health",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/api(.*)?",
-      "dest": "/api/index.js"
+      "source": "/(.*)",
+      "destination": "/api/index.js"
     }
   ]
 }
