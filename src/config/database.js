@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 
 let isConnecting = false;
+let connectPromise = null;
 
 const connectDB = async () => {
   try {
@@ -11,9 +12,9 @@ const connectDB = async () => {
       return;
     }
 
-    if (isConnecting) {
+    if (connectPromise) {
       console.log("⏳ Connection already in progress...");
-      return;
+      return connectPromise;
     }
 
     isConnecting = true;
@@ -32,7 +33,9 @@ const connectDB = async () => {
       autoIndex: true,
     };
 
-    await mongoose.connect(process.env.MONGODB_URI, options);
+    connectPromise = mongoose.connect(process.env.MONGODB_URI, options);
+    await connectPromise;
+    connectPromise = null;
     isConnecting = false;
 
     console.log("✅ MongoDB Connected Successfully!");
@@ -47,7 +50,7 @@ const connectDB = async () => {
         if (mongoose.connection.readyState === 0) {
           console.log("🔄 Attempting to reconnect to MongoDB...");
           connectDB().catch((err) =>
-            console.error("Reconnection failed:", err)
+            console.error("Reconnection failed:", err),
           );
         }
       }, 5000);
@@ -81,6 +84,7 @@ const connectDB = async () => {
     console.error("❌ MongoDB Connection Error:", error.message);
     console.error("Full error:", error);
     isConnecting = false;
+    connectPromise = null;
 
     if (process.env.NODE_ENV !== "production") {
       process.exit(1);

@@ -44,6 +44,19 @@ connectDB().catch((err) => {
   console.error("Failed to connect to MongoDB:", err);
 });
 
+const ensureDatabaseConnection = async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    res.status(503).json({
+      success: false,
+      message: "Database connection is not ready",
+      error: error.message,
+    });
+  }
+};
+
 // API Routes
 app.get("/", (req, res) => {
   res.json({
@@ -93,13 +106,21 @@ app.get("/api/health", async (req, res) => {
 });
 
 // Product Routes
-app.use("/api/products", require("./routes/productRoutes"));
+app.use(
+  "/api/products",
+  ensureDatabaseConnection,
+  require("./routes/productRoutes"),
+);
 
 // Cart Routes
-app.use("/api/cart", require("./routes/cartRoutes"));
+app.use("/api/cart", ensureDatabaseConnection, require("./routes/cartRoutes"));
 
 // Order Routes
-app.use("/api/orders", require("./routes/orderRoutes"));
+app.use(
+  "/api/orders",
+  ensureDatabaseConnection,
+  require("./routes/orderRoutes"),
+);
 
 // Error Handlers (must be last)
 app.use(notFound);
